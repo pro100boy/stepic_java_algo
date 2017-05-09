@@ -35,16 +35,6 @@ public class Main {
         return tmp.intValue();
     }
 
-    /*public static int h(String word) {
-        double hash = 0;
-        for (int i = 0; i < word.length(); i++) {
-            int code = word.codePointAt(i);
-            hash += code * Math.pow(263, i);
-        }
-
-        return (int) (hash % p % size);
-    }*/
-
     public static void main(String[] args) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         size = new BigInteger(reader.readLine());
