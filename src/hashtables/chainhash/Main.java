@@ -3,6 +3,7 @@ package hashtables.chainhash;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -10,34 +11,44 @@ import java.util.stream.Collectors;
  * Created by Galushkin Pavel on 09.05.2017.
  */
 public class Main {
-    private static int size;
+    private static BigInteger size;
+    private static final BigInteger k = BigInteger.valueOf(263);
+    private static final BigInteger p = BigInteger.valueOf(1_000_000_007);
+    private static final BigInteger[] matrix = new BigInteger[15];
 
-    /*public static int h(String word) {
-        BigDecimal hash = BigDecimal.valueOf(0);
-        int k = 263, p = 1_000_000_007;
-        for (int i = 0; i < word.length(); i++) {
-            int code = word.codePointAt(i);
-            hash = hash.add(BigDecimal.valueOf(Math.pow(k, i)).multiply(BigDecimal.valueOf(code)));
+    // сразу заполняем степени 263
+    static {
+        matrix[0] = BigInteger.valueOf(1);
+        for (int i = 1; i < matrix.length; i++) {
+            matrix[i] = matrix[i - 1].multiply(k);
         }
-
-        return hash.intValue() % p % size;
-    }*/
+        //Arrays.stream(matrix).forEach(System.out::println);
+    }
 
     public static int h(String word) {
+        BigInteger hash = BigInteger.valueOf(0);
+        for (int i = 0; i < word.length(); i++) {
+            BigInteger code = BigInteger.valueOf(word.codePointAt(i));
+            hash = hash.add(matrix[i].multiply(code));
+        }
+        BigInteger tmp = hash.mod(p).mod(size);
+        return tmp.intValue();
+    }
+
+    /*public static int h(String word) {
         double hash = 0;
-        int k = 263, p = 1_000_000_007;
         for (int i = 0; i < word.length(); i++) {
             int code = word.codePointAt(i);
-            hash += code * Math.pow(k, i);
+            hash += code * Math.pow(263, i);
         }
 
         return (int) (hash % p % size);
-    }
+    }*/
 
     public static void main(String[] args) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        size = Integer.parseInt(reader.readLine());
-        Map<Integer, LinkedList<String>> map = new HashMap<>(size + 1);
+        size = new BigInteger(reader.readLine());
+        Map<Integer, LinkedList<String>> map = new HashMap<>();
         int cnt = Integer.parseInt(reader.readLine());
 
         String word;
@@ -77,7 +88,7 @@ public class Main {
                 default:
                     bucket = Integer.valueOf(command[1]);
                     list = map.getOrDefault(bucket, null);
-                    System.out.println( !Objects.isNull(list) ? list.stream().collect(Collectors.joining(" ")).toString() : "");
+                    System.out.println(!Objects.isNull(list) ? list.stream().collect(Collectors.joining(" ")).toString() : "");
                     break;
             }
         }
