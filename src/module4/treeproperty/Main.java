@@ -30,17 +30,10 @@ class Node {
 public class Main {
     private static List<Node> orderList = new ArrayList<>();
 
-    public static void inOrder(Node node) {
-        if (node == null) return;
-        inOrder(node.left);
-        orderList.add(node);
-        inOrder(node.right);
-    }
-
     // min и max — минимально и максимально допустимые значения в вершинах поддерева.
     public static boolean check(Node v, int min, int max) {
         if (v == null) return true;
-        if (v.value <= min || max <= v.value) return false;
+        if (v.value < min || max <= v.value) return false;
         return check(v.left, min, v.value) && check(v.right, v.value, max);
     }
 
@@ -68,32 +61,6 @@ public class Main {
             nodes[i] = n;
         }
 
-        System.out.println(check(nodes[0], Integer.MIN_VALUE, Integer.MAX_VALUE));
-        /*Arrays.stream(nodes).forEach(System.out::println);
-        System.exit(0);*/
-        //inOrder(nodes[0]);
-        //System.out.println(orderList.stream().map(i->String.valueOf(i.value)).collect(Collectors.joining(" ")).toString());
-        //System.out.println(orderList.stream().map(i -> String.valueOf(i)).collect(Collectors.joining("\n")).toString());
-        /*boolean correct = true;
-        boolean leftPart = true;
-        for (Node n : orderList) {
-            if (n != nodes[0] && leftPart) {
-                if (nodes[0].value < n.value) {
-                    correct = false;
-                    break;
-                }
-            }
-            if (n == nodes[0]) {
-                leftPart = false;
-                continue;
-            }
-            if (n != nodes[0] && !leftPart) {
-                if (nodes[0].value >= n.value) {
-                    correct = false;
-                    break;
-                }
-            }
-        }
-        System.out.print(correct ? "CORRECT" : "INCORRECT");*/
+        System.out.println(check(nodes[0], Integer.MIN_VALUE, Integer.MAX_VALUE) ? "CORRECT" : "INCORRECT");
     }
 }
