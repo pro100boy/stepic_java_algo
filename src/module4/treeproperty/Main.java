@@ -3,9 +3,7 @@ package module4.treeproperty;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 // A binary tree node
 class Node {
@@ -28,8 +26,6 @@ class Node {
 }
 
 public class Main {
-    private static List<Node> orderList = new ArrayList<>();
-
     // min и max — минимально и максимально допустимые значения в вершинах поддерева.
     public static boolean check(Node v, int min, int max) {
         if (v == null) return true;
