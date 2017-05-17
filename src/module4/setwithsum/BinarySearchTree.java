@@ -280,20 +280,20 @@ public class BinarySearchTree {
         insert(8, 8);
         insert(5, 5);
         insert(10, 10);
-        keys(2,4);
-        System.out.println(summa);
+        //keys(2,4);
+        //System.out.println(summa);
         //split(root, 2);
         //root.print();
-        //Node root2 = splitTree(root, 2);
+        Node root2 = splitTree(root, 2);
         // Output the resulting trees
-        //root.print();
-        //root2.print();
+        root.print();
+        root2.print();
         //Node root3 = splitTree(root, 2);
         /*System.out.println(sum(root));
         System.out.println(sum(root2));*/
         //keys(2,4).forEach(System.out::println);
-        //Node d = merge(root2, root);
-
+        Node d = merge(root2, root);
+print(d);
         /*tree.print();
         System.out.println(tree.sum(tree.root));
         tree.remove(8);
