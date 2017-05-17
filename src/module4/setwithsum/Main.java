@@ -1,174 +1,299 @@
 package module4.setwithsum;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.*;
 
 public class Main {
 
-    private Node root;
-    public long sum = 0l;
+    BufferedReader br;
+    PrintWriter out;
+    StringTokenizer st;
+    boolean eof;
 
-    static class Node {
-        long key;
+    // Splay tree implementation
+
+    // Vertex of a splay tree
+    class Vertex {
+        int key;
+        // Sum of all the keys in the subtree - remember to update
+        // it after each operation that changes the tree.
         long sum;
-        Node l;
-        Node r;
-        Node p;
+        Vertex left;
+        Vertex right;
+        Vertex parent;
 
-        public Node(long key, Node p) {
+        Vertex(int key, long sum, Vertex left, Vertex right, Vertex parent) {
             this.key = key;
-            this.p = p;
-        }
-
-        public void print() {
-            print("", true);
-        }
-
-        private void print(String prefix, boolean isTail) {
-            System.out.println(prefix + (isTail ? "└── " : "├── ") + key + ":" + sum);
-            String nextPrefix = prefix + (isTail ? "    " : "│   ");
-            if (l != null || r != null) {
-                if (l != null) {
-                    l.print(nextPrefix, r == null);
-                } else {
-                    System.out.println(nextPrefix + (r == null ? "└── " : "├── "));
-                }
-                if (r != null) {
-                    r.print(nextPrefix, true);
-                } else {
-                    System.out.println(nextPrefix + "└── ");
-                }
-            }
+            this.sum = sum;
+            this.left = left;
+            this.right = right;
+            this.parent = parent;
         }
     }
 
-    private Node search(Node t, long key) {
-        if (t == null || t.key == key)
-            return t;
-        if (key < t.key)
-            return search(t.l, key);
-        else
-            return search(t.r, key);
-    }
-
-    public Node search(long key) {
-        return search(root, key);
-    }
-
-    private Node insert(Node t, Node p, long key) {
-        if (t == null) {
-            t = new Node(key, p);
-        } else {
-            if (key < t.key)
-                t.l = insert(t.l, t, key);
-            else
-                t.r = insert(t.r, t, key);
+    void update(Vertex v) {
+        if (v == null) return;
+        v.sum = v.key + (v.left != null ? v.left.sum : 0) + (v.right != null ? v.right.sum : 0);
+        if (v.left != null) {
+            v.left.parent = v;
         }
-
-        // поддерживаем пересчет суммы
-        t.sum = t.key + (t.l == null ? 0 : t.l.sum) + (t.r == null ? 0 : t.r.sum);
-        return t;
+        if (v.right != null) {
+            v.right.parent = v;
+        }
     }
 
-    public void insert(long key) {
-        root = insert(root, null, key);
-    }
-
-    private void replace(Node a, Node b) {
-        if (a.p == null)
-            root = b;
-        else if (a == a.p.l)
-            a.p.l = b;
-        else
-            a.p.r = b;
-        if (b != null)
-            b.p = a.p;
-    }
-
-    private void remove(Node t, long key) {
-        if (t == null)
+    void smallRotation(Vertex v) {
+        Vertex parent = v.parent;
+        if (parent == null) {
             return;
-        if (key < t.key)
-            remove(t.l, key);
-        else if (key > t.key)
-            remove(t.r, key);
-        else if (t.l != null && t.r != null) {
-            Node m = t.r;
-            while (m.l != null)
-                m = m.l;
-            t.key = m.key;
-            replace(m, m.r);
-        } else if (t.l != null) {
-            replace(t, t.l);
-        } else if (t.r != null) {
-            replace(t, t.r);
+        }
+        Vertex grandparent = v.parent.parent;
+        if (parent.left == v) {
+            Vertex m = v.right;
+            v.right = parent;
+            parent.left = m;
         } else {
-            replace(t, null);
+            Vertex m = v.left;
+            v.left = parent;
+            parent.right = m;
         }
-        // поддерживаем пересчет суммы
-        t.sum = t.key + (t.l == null ? 0 : t.l.sum) + (t.r == null ? 0 : t.r.sum);
-    }
-
-    public void remove(long key) {
-        remove(root, key);
-    }
-
-    public long keys(Node x, long lo, long hi) {
-        if (x != null) {
-            long cmplo = Long.compare(lo, x.key);
-            long cmphi = Long.compare(hi, x.key);
-            if (cmplo < 0) keys(x.l, lo, hi);
-            if (cmplo <= 0 && cmphi >= 0) {
-                sum += x.key;
+        update(parent);
+        update(v);
+        v.parent = grandparent;
+        if (grandparent != null) {
+            if (grandparent.left == parent) {
+                grandparent.left = v;
+            } else {
+                grandparent.right = v;
             }
-            if (cmphi > 0) keys(x.r, lo, hi);
         }
-        return sum;
+    }
+
+    void bigRotation(Vertex v) {
+        if (v.parent.left == v && v.parent.parent.left == v.parent) {
+            // Zig-zig
+            smallRotation(v.parent);
+            smallRotation(v);
+        } else if (v.parent.right == v && v.parent.parent.right == v.parent) {
+            // Zig-zig
+            smallRotation(v.parent);
+            smallRotation(v);
+        } else {
+            // Zig-zag
+            smallRotation(v);
+            smallRotation(v);
+        }
+    }
+
+    // Makes splay of the given vertex and returns the new root.
+    Vertex splay(Vertex v) {
+        if (v == null) return null;
+        while (v.parent != null) {
+            if (v.parent.parent == null) {
+                smallRotation(v);
+                break;
+            }
+            bigRotation(v);
+        }
+        return v;
+    }
+
+    class VertexPair {
+        Vertex left;
+        Vertex right;
+
+        VertexPair() {
+        }
+
+        VertexPair(Vertex left, Vertex right) {
+            this.left = left;
+            this.right = right;
+        }
+    }
+
+    // Searches for the given key in the tree with the given root
+    // and calls splay for the deepest visited node after that.
+    // Returns pair of the result and the new root.
+    // If found, result is a pointer to the node with the given key.
+    // Otherwise, result is a pointer to the node with the smallest
+    // bigger key (next value in the order).
+    // If the key is bigger than all keys in the tree,
+    // then result is null.
+    VertexPair find(Vertex root, int key) {
+        Vertex v = root;
+        Vertex last = root;
+        Vertex next = null;
+        while (v != null) {
+            if (v.key >= key && (next == null || v.key < next.key)) {
+                next = v;
+            }
+            last = v;
+            if (v.key == key) {
+                break;
+            }
+            if (v.key < key) {
+                v = v.right;
+            } else {
+                v = v.left;
+            }
+        }
+        root = splay(last);
+        return new VertexPair(next, root);
+    }
+
+    VertexPair split(Vertex root, int key) {
+        VertexPair result = new VertexPair();
+        VertexPair findAndRoot = find(root, key);
+        root = findAndRoot.right;
+        result.right = findAndRoot.left;
+        if (result.right == null) {
+            result.left = root;
+            return result;
+        }
+        result.right = splay(result.right);
+        result.left = result.right.left;
+        result.right.left = null;
+        if (result.left != null) {
+            result.left.parent = null;
+        }
+        update(result.left);
+        update(result.right);
+        return result;
+    }
+
+    Vertex merge(Vertex left, Vertex right) {
+        if (left == null) return right;
+        if (right == null) return left;
+        while (right.left != null) {
+            right = right.left;
+        }
+        right = splay(right);
+        right.left = left;
+        update(right);
+        return right;
+    }
+
+    // Code that uses splay tree to solve the problem
+
+    Vertex root = null;
+
+    void insert(int x) {
+        Vertex left = null;
+        Vertex right = null;
+        Vertex new_vertex = null;
+        VertexPair leftRight = split(root, x);
+        left = leftRight.left;
+        right = leftRight.right;
+        if (right == null || right.key != x) {
+            new_vertex = new Vertex(x, x, null, null, null);
+        }
+        root = merge(merge(left, new_vertex), right);
+    }
+
+    void erase(int x) {
+        Vertex left, middle, right;
+        VertexPair pair = split(root, x);
+        left = pair.left;
+        middle = pair.right;
+        VertexPair st = split(middle, x + 1);
+        middle = st.left;
+        right = st.right;
+        middle = null;
+        root = merge(left, right);
+        splay(root);
+    }
+
+    boolean find(int x) {
+        if (root == null) return false;
+        VertexPair n = find(root, x);
+        root = splay(n.right);
+        if (root.key == x) {
+            return true;
+        }
+        return false;
+    }
+
+    long sum(int from, int to) {
+        if (from > to) return 0;
+        Vertex left, middle, right;
+        VertexPair leftMiddle = split(root, from);
+        left = leftMiddle.left;
+        middle = leftMiddle.right;
+        VertexPair middleRight = split(middle, to + 1);
+        middle = middleRight.left;
+        right = middleRight.right;
+        long ans = 0;
+
+        if (middle != null) ans += middle.sum;
+        Vertex tmp = merge(left, middle);
+        root = merge(tmp, right);
+        return ans;
+    }
+
+    public static final int MODULO = 1000000001;
+
+    void solve() throws IOException {
+        int n = nextInt();
+        int last_sum_result = 0;
+        for (int i = 0; i < n; i++) {
+            char type = nextChar();
+            switch (type) {
+                case '+': {
+                    int x = nextInt();
+                    insert((x + last_sum_result) % MODULO);
+                }
+                break;
+                case '-': {
+                    int x = nextInt();
+                    erase((x + last_sum_result) % MODULO);
+                }
+                break;
+                case '?': {
+                    int x = nextInt();
+                    out.println(find((x + last_sum_result) % MODULO) ? "Found" : "Not found");
+                }
+                break;
+                case 's': {
+                    int l = nextInt();
+                    int r = nextInt();
+                    long res = sum((l + last_sum_result) % MODULO, (r + last_sum_result) % MODULO);
+                    out.println(res);
+                    last_sum_result = (int) (res % MODULO);
+                }
+            }
+        }
+
+    }
+
+    Main() throws IOException {
+        br = new BufferedReader(new InputStreamReader(System.in));
+        out = new PrintWriter(System.out);
+        solve();
+        out.close();
     }
 
     public static void main(String[] args) throws IOException {
-        final Main main = new Main();
+        new Main();
+    }
 
-        final int MODULUS = 1_000_000_001;
-        long sum_prev = 0;
-        List<String> tmpAnswers = new LinkedList<>();
-        //List<String> tmpVhod = new LinkedList<>();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        int rowCnt = Integer.parseInt(reader.readLine());
-
-        for (int i = 0; i < rowCnt; i++) {
-            //String vhod = reader.readLine();
-            //tmpVhod.add(vhod);
-            String[] row = reader.readLine().split(" ");
-            long a = (sum_prev + Long.parseLong(row[1])) % MODULUS;
-            switch (row[0]) {
-                case "?":
-                    tmpAnswers.add(main.search(a) != null ? "Found" : "Not found");
-                    //System.out.println(set.contains(a) ? "Found" : "Not found");
-                    break;
-                case "-":
-                    main.remove(a);
-                    break;
-                case "+":
-                    if (main.search(a) == null)
-                        main.insert(a);
-                    break;
-                default:
-                    long b = (sum_prev + Long.parseLong(row[2])) % MODULUS;
-                    //try {
-                    main.sum = 0L;
-                    sum_prev = main.keys(main.root, a, b);
-                    tmpAnswers.add(String.valueOf(sum_prev));
-                    //System.out.println(sum_prev);
-                    //} catch (Exception e) {
-                    //throw new RuntimeException(/*tmpVhod.toString()*/);
-                    //System.out.println(e.getMessage());
-                    //}
-                    break;
+    String nextToken() {
+        while (st == null || !st.hasMoreTokens()) {
+            try {
+                st = new StringTokenizer(br.readLine());
+            } catch (Exception e) {
+                eof = true;
+                return null;
             }
         }
-        tmpAnswers.stream().forEach(System.out::println);
+        return st.nextToken();
+    }
+
+    int nextInt() throws IOException {
+        return Integer.parseInt(nextToken());
+    }
+
+    char nextChar() throws IOException {
+        return nextToken().charAt(0);
     }
 }
+
