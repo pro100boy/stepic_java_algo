@@ -1,9 +1,7 @@
 package module4.rope;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Arrays;
+import java.io.*;
+import java.util.*;
 
 /**
  * A rope implementation in Java for Stanford's CS 166
@@ -67,15 +65,14 @@ class Rope implements CharSequence {
     }
 
     private char charAt(Rope node, int i) {
-        if(node.left == null) {
+        if (node.left == null) {
             assert i >= 0 && i < node.leftLen;
             return node.data.charAt(i);
         }
 
-        if(node.leftLen > i) {
+        if (node.leftLen > i) {
             return charAt(node.left, i);
-        }
-        else {
+        } else {
             return charAt(node.right, i - node.leftLen);
         }
     }
@@ -103,8 +100,7 @@ class Rope implements CharSequence {
                 nodes.two = new Rope(nd.data.substring(index, nd.leftLen));
             }
             return nodes;
-        }
-        else if (index == nd.leftLen) {
+        } else if (index == nd.leftLen) {
             return new Pair<Rope>(nd.left, nd.right);
         } else if (index < nd.leftLen) {
             Pair<Rope> pair = split(nd.left, index);
@@ -127,7 +123,7 @@ class Rope implements CharSequence {
     }
 
     public String toString() {
-        if(left == null) return data;
+        if (left == null) return data;
         return left.toString() + right.toString();
     }
 }
@@ -144,7 +140,6 @@ public class Main {
             int from = tmp[0];
             int to = tmp[1];
             int idx = tmp[2];
-
             // отделяем строку ДО куска
             Pair<Rope> pairBefore = r.split(from);
 
@@ -155,7 +150,10 @@ public class Main {
             if (pairBefore.one != null)
                 r = pairBefore.one.concat(pairAfter.two);
             else r = pairAfter.two;
-            r = r.insert(pairAfter.one, idx);
+
+            if (r != null)
+                r = r.insert(pairAfter.one, idx);
+            else r = pairAfter.one;
         }
         System.out.println(r.toString());
     }

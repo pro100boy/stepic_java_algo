@@ -77,22 +77,6 @@ public class Benchmark {
         }
     }
 
-    public static void main(String[] args) {
-        rng = new Random();
-        runTest(new NewTestString(), "");
-        runTest(new NewTestRope(), new Rope(""));
-        String strcon = runTest(new ConcatTestString(), "");
-        Rope rcon = runTest(new ConcatTestRope(), new Rope(""));
-        runTest(new SubstrTest<String>(), "");
-        runTest(new SubstrTest<Rope>(), new Rope(""));
-        runTest(new SubstrTest<String>(), strcon);
-        runTest(new SubstrTest<Rope>(), rcon);
-        runTest(new CharAtTest<String>(), strcon);
-        runTest(new CharAtTest<Rope>(), rcon);
-        runTest(new InsertTestString(), "");
-        runTest(new InsertTestRope(), new Rope(""));
-    }
-
     static <T extends CharSequence> T runTest(Test<T> test, T str) {
         long startTime = System.nanoTime();
         for (int i = 0; i < NUM_ROUNDS; i++) {
@@ -118,5 +102,21 @@ public class Benchmark {
             text[i] = characters.charAt(rng.nextInt(26));
         }
         return new String(text);
+    }
+
+    public static void main(String[] args) {
+        rng = new Random();
+        runTest(new NewTestString(), "");
+        runTest(new NewTestRope(), new Rope(""));
+        String strcon = runTest(new ConcatTestString(), "");
+        Rope rcon = runTest(new ConcatTestRope(), new Rope(""));
+        runTest(new SubstrTest<String>(), "");
+        runTest(new SubstrTest<Rope>(), new Rope(""));
+        runTest(new SubstrTest<String>(), strcon);
+        runTest(new SubstrTest<Rope>(), rcon);
+        runTest(new CharAtTest<String>(), strcon);
+        runTest(new CharAtTest<Rope>(), rcon);
+        runTest(new InsertTestString(), "");
+        runTest(new InsertTestRope(), new Rope(""));
     }
 }
