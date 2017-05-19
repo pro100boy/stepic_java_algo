@@ -1,200 +1,110 @@
 package module4.rope;
 
-/**
- * Rope Class
- *
- * @author Elias Haroun
- */
+public class Rope implements CharSequence {
 
-/**
- * Java Implementation of Rope
- *
- * @author Elias Haroun
- */
-class RopeNode {
-    public RopeNode left;
-    public RopeNode right;
-    public String data;
-    public int weight;
+    String data;
+    Rope left;
+    Rope right;
+    int leftLen;
 
-
-    /**
-     * Default Constructor
-     */
-    public RopeNode() {
-        this.left = null;
-        this.right = null;
-        this.data = null;
-        this.weight = 0;
-    }
-
-
-    /**
-     * Overloaded Constructor
-     *
-     * @param data The string to create the Rope with
-     */
-    public RopeNode(String data) {
-        this.left = null;
-        this.right = null;
+    public Rope(String data) {
         this.data = data;
-        this.weight = data.length();
-    }
-}
-
-public class Rope {
-
-    private RopeNode root;
-    private int length;
-
-    /**
-     * Default Constructor
-     */
-    public Rope() {
-        this.root = new RopeNode("");
-        this.length = 0;
+        this.leftLen = data.length();
     }
 
-    /**
-     * Overloaded Constructor
-     *
-     * @param initial string
-     */
-    public Rope(String str) {
-        this.root = new RopeNode("");
-        this.concat(str);
-        this.length = str.length();
+    public Rope(Rope left, Rope right) {
+        this.left = left;
+        this.right = right;
+        this.leftLen = length(left);
     }
 
-    /**
-     * This function clears rope
-     */
-    public void makeEmpty() {
-        this.root = new RopeNode("");
-        this.length = 0;
-    }
-
-    /**
-     * This function returns the length of Rope
-     */
     public int length() {
-        return this.length;
+        return length(this);
     }
 
-    /**
-     * This function concatenates an element
-     *
-     * @param string to append to existing string
-     */
-    public void concat(String str) {
-        RopeNode newRopeNode = new RopeNode(str);
-        RopeNode newRoot = new RopeNode();
-        newRoot.left = root;
-        newRoot.right = newRopeNode; //RopeNodes containing a string are always on the right
-        newRoot.weight = newRoot.left.weight; //Weight of the root comes from its left children
-        if (newRoot.left.right != null) {
-            newRoot.weight += newRoot.left.right.weight;
+    private int length(Rope r) {
+        int len = 0;
+        for (; r != null; r = r.right) {
+            len += r.leftLen;
         }
-        this.root = newRoot;
-        length += str.length();
+        return len;
     }
 
-    /**
-     * This function returns the character at a particular index
-     *
-     * @param index of desired character
-     */
-    public char charAt(int index) {
-        RopeNode temp = this.root;
-        if (index > temp.weight) {
-            index -= temp.weight;
-            return temp.right.data.charAt(index);
-        }
-
-        while (index < temp.weight) {
-            temp = temp.left;// Go to left child
-        }
-        index -= temp.weight;
-        return temp.right.data.charAt(index);
+    public Rope concat(Rope r) {
+        return concat(this, r);
     }
 
-    /**
-     * This function returns the substring between two indices
-     *
-     * @param start index
-     * @param end   index
-     */
-    public String substring(int start, int end) {
-        String str = "";
-        boolean found = false;
-        RopeNode temp = this.root;
-        if (end > temp.weight) {
-            found = true;
-            end -= temp.weight;
-            if (start > temp.weight) {
-                start -= temp.weight;
-                str = temp.right.data.substring(start, end);
-                return str;
+    private Rope concat(Rope one, Rope two) {
+        if (one == null) {
+            return two;
+        } else if (two == null) {
+            return one;
+        }
+        return new Rope(one, two);
+    }
+
+    private char charAt(Rope node, int i) {
+        if(node.left == null) {
+            assert i >= 0 && i < node.leftLen;
+            return node.data.charAt(i);
+        }
+
+        if(node.leftLen > i) {
+            return charAt(node.left, i);
+        }
+        else {
+            return charAt(node.right, i - node.leftLen);
+        }
+    }
+
+    public char charAt(int i) {
+        return charAt(this, i);
+    }
+
+    public Pair<Rope> split(int index) {
+        return split(this, index);
+    }
+
+    private Pair<Rope> split(Rope nd, int index) {
+        if (nd.left == null) {
+            assert index >= 0 && index <= nd.leftLen;
+            Pair<Rope> nodes = new Pair<Rope>();
+            if (index == 0) {
+                nodes.one = null;
+                nodes.two = nd;
+            } else if (index == nd.leftLen) {
+                nodes.one = nd;
+                nodes.two = null;
             } else {
-                str = temp.right.data.substring(0, end);
+                nodes.one = new Rope(nd.data.substring(0, index));
+                nodes.two = new Rope(nd.data.substring(index, nd.leftLen));
             }
+            return nodes;
         }
-        if (!found) {
-            while (end <= temp.weight) {
-                temp = temp.left;// Go to left child
-            }
-            if (start > temp.weight) {
-                start -= temp.weight;
-                str = temp.right.data.substring(start, end);
-                return str;
-            } else {
-                str = temp.right.data.substring(0, end);
-            }
-        }
-        temp = temp.left;
-        while (start < temp.weight) {
-            str = temp.right.data + str;// Concat as you go down the tree
-            temp = temp.left;
-        }
-        start -= temp.weight;
-        if (temp.right != null) {
-            str = temp.right.data.substring(start) + str;
-        }
-        return str;
-    }
-
-    /**
-     * This function returns the substring between two indices
-     *
-     * @param start index
-     */
-    public String substring(int start) {
-        return this.substring(start, length);
-    }
-
-    /**
-     * This function prints a Rope
-     */
-    public void print() {
-        print(this.root);
-        System.out.println();
-    }
-
-    // Function only accessible from the public print() method
-    private void print(RopeNode r) {
-        if (r != null) // In-order traversal
-        {
-            print(r.left);
-            if (r.data != null) {
-                System.out.print(r.data);
-            }
-            print(r.right);
+        else if (index == nd.leftLen) {
+            return new Pair<Rope>(nd.left, nd.right);
+        } else if (index < nd.leftLen) {
+            Pair<Rope> pair = split(nd.left, index);
+            return new Pair<Rope>(pair.one, concat(pair.two, nd.right));
+        } else {
+            Pair<Rope> pair = split(nd.right, index - nd.leftLen);
+            return new Pair<Rope>(concat(nd.left, pair.one), pair.two);
         }
     }
 
-    public static void main(String[] args) {
-        Rope rope = new Rope("abcdef");
-        rope.concat("ttt");
-        rope.print();
+    public Rope subSequence(int start, int end) {
+        Pair<Rope> sp1 = split(start);
+        Pair<Rope> sp2 = sp1.two.split(end - start);
+        return sp2.one;
+    }
+
+    public Rope insert(Rope r, int index) {
+        Pair<Rope> pair = this.split(index);
+        return concat(concat(pair.one, r), pair.two);
+    }
+
+    public String toString() {
+        if(left == null) return data;
+        return left.toString() + right.toString();
     }
 }
