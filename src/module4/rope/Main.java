@@ -157,4 +157,23 @@ public class Main {
         }
         System.out.println(r.toString());
     }
+
+    /*
+    public static void main(String[] args) throws Exception {
+		try (Scanner in = new Scanner(System.in)) {
+			Rope rope = new Rope(in.nextLine());
+			int q = in.nextInt();
+			while (q-- > 0) {
+				int i = in.nextInt();
+				int j = in.nextInt() + 1;
+				int k = in.nextInt();
+				Pair<Rope> p1 = rope.split(i);
+				Pair<Rope> p2 = p1.two.split(j - i);
+				rope = Rope.concat(p1.one, p2.two);
+				rope = Rope.insert(rope, p2.one, k);
+			}
+			System.out.println(rope);
+		}
+	}
+     */
 }
