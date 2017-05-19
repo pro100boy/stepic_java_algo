@@ -15,7 +15,6 @@ public class Main {
         Rope r = new Rope(reader.readLine());
         // число запросов
         int rowCnt = Integer.parseInt(reader.readLine());
-        Rope res = null;
         for (int i = 0; i < rowCnt; i++) {
             int[] tmp = Arrays.stream(reader.readLine().split("\\s")).mapToInt(Integer::parseInt).toArray();
             int from = tmp[0];
@@ -29,16 +28,11 @@ public class Main {
             Pair<Rope> pairAfter = pairBefore.two.split(to - from + 1);
             //System.out.println(pairAfter.one); // это вырезанный кусок
             //System.out.println(pairAfter.two); // это правая часть
-
-            res = pairBefore.one.concat(pairAfter.two);//.insert(pairAfter.one, idx);
-
-            res = res.insert(pairAfter.one, idx);
+            if (pairBefore.one != null)
+                r = pairBefore.one.concat(pairAfter.two);
+            else r = pairAfter.two;
+            r = r.insert(pairAfter.one, idx);
         }
-
-
-        // 0156789 -> 0156234789
-
-
-        System.out.println(res.toString());
+        System.out.println(r.toString());
     }
 }
