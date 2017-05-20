@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Main {
     private static int HEAPSIZE;
@@ -16,11 +17,15 @@ public class Main {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         HEAPSIZE = Integer.parseInt(reader.readLine());
         H = Arrays.stream(reader.readLine().split("\\s")).mapToInt(Integer::parseInt).toArray();
-
+        System.out.println(Arrays.stream(H)
+                .mapToObj(String::valueOf)
+                .collect(Collectors.joining(" ")));
         for (int i = HEAPSIZE / 2; i >= 0; i--) {
             siftDown(i);
         }
-
+        System.out.println(Arrays.stream(H)
+                .mapToObj(String::valueOf)
+                .collect(Collectors.joining(" ")));
         System.out.println(rotateList.size());
         if (rotateList.size() > 0) rotateList.stream().forEach(System.out::println);
     }
